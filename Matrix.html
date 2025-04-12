@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="min-h-screen bg-black bg-[url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1000')] bg-cover bg-center">
+    <div class="container mx-auto px-4 py-8 backdrop-blur-sm bg-black/50">
+        <h1 class="text-3xl font-bold text-center mb-8 text-white drop-shadow-[0_0_8px_rgba(100,200,255,0.8)]">Matrix Calculator</h1>
+        
+        <div class="bg-gray-900/80 rounded-lg shadow-lg p-6 mb-8 border border-gray-600/50">
+            <div class="flex flex-wrap justify-center gap-8 mb-8">
+                <!-- Matrix A -->
+                <div class="matrix-container">
+                    <h2 class="text-xl font-semibold mb-4 text-center text-blue-300">Matrix A</h2>
+                    <div id="matrixA" class="grid grid-cols-3 gap-2 mb-4 [&>input]:bg-gray-800 [&>input]:text-white [&>input]:border-gray-600"></div>
+                    <div class="flex justify-center gap-2">
+                        <button onclick="changeMatrixSize('A', 'row', -1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-minus"></i> Row
+                        </button>
+                        <button onclick="changeMatrixSize('A', 'row', 1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-plus"></i> Row
+                        </button>
+                        <button onclick="changeMatrixSize('A', 'col', -1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-minus"></i> Col
+                        </button>
+                        <button onclick="changeMatrixSize('A', 'col', 1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-plus"></i> Col
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Matrix B -->
+                <div class="matrix-container">
+                    <h2 class="text-xl font-semibold mb-4 text-center text-purple-300">Matrix B</h2>
+                    <div id="matrixB" class="grid grid-cols-3 gap-2 mb-4 [&>input]:bg-gray-800 [&>input]:text-white [&>input]:border-gray-600"></div>
+                    <div class="flex justify-center gap-2">
+                        <button onclick="changeMatrixSize('B', 'row', -1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-minus"></i> Row
+                        </button>
+                        <button onclick="changeMatrixSize('B', 'row', 1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-plus"></i> Row
+                        </button>
+                        <button onclick="changeMatrixSize('B', 'col', -1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-minus"></i> Col
+                        </button>
+                        <button onclick="changeMatrixSize('B', 'col', 1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">
+                            <i class="fas fa-plus"></i> Col
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operations -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button onclick="performOperation('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-plus"></i> Add (A + B)
+                </button>
+                <button onclick="performOperation('subtract')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-minus"></i> Subtract (A - B)
+                </button>
+                <button onclick="performOperation('multiply')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-times"></i> Multiply (A × B)
+                </button>
+                <button onclick="performOperation('transposeA')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-exchange-alt"></i> Transpose A
+                </button>
+                <button onclick="performOperation('transposeB')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-exchange-alt"></i> Transpose B
+                </button>
+                <button onclick="performOperation('determinantA')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-calculator"></i> Determinant A
+                </button>
+                <button onclick="clearMatrices()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-all hover:scale-105">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+
+            <!-- Result -->
+            <div class="result-container">
+                <h2 class="text-xl font-semibold mb-4 text-center text-yellow-300">Result</h2>
+                <div id="resultMatrix" class="grid gap-2 mb-4 flex justify-center [&>div]:bg-gray-800/90 [&>div]:text-white [&>div]:border-gray-600"></div>
+                <div id="scalarResult" class="text-center text-2xl font-bold text-green-400 hidden drop-shadow-[0_0_8px_rgba(100,255,100,0.5)]"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize matrices
+        let matrixA = {
+            rows: 2,
+            cols: 2,
+            data: [[0, 0], [0, 0]]
+        };
+
+        let matrixB = {
+            rows: 2,
+            cols: 2,
+            data: [[0, 0], [0, 0]]
+        };
+
+        // Initialize matrices on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMatrix('A');
+            renderMatrix('B');
+        });
+
+        // Render matrix to HTML
+        function renderMatrix(matrixName) {
+            const matrix = matrixName === 'A' ? matrixA : matrixB;
+            const container = document.getElementById(`matrix${matrixName}`);
+            
+            // Clear existing inputs
+            container.innerHTML = '';
+            
+            // Set grid columns based on matrix columns
+            container.className = `grid gap-2 mb-4`;
+            container.style.gridTemplateColumns = `repeat(${matrix.cols}, minmax(0, 1fr))`;
+            
+            // Create input elements for each cell
+            for (let i = 0; i < matrix.rows; i++) {
+                for (let j = 0; j < matrix.cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = matrix.data[i]?.[j] || 0;
+                    input.className = 'w-full p-2 border rounded text-center';
+                    input.dataset.row = i;
+                    input.dataset.col = j;
+                    input.addEventListener('input', function() {
+                        updateMatrixData(matrixName, i, j, parseFloat(this.value) || 0);
+                    });
+                    container.appendChild(input);
+                }
+            }
+        }
+
+        // Update matrix data when input changes
+        function updateMatrixData(matrixName, row, col, value) {
+            const matrix = matrixName === 'A' ? matrixA : matrixB;
+            if (!matrix.data[row]) matrix.data[row] = [];
+            matrix.data[row][col] = value;
+        }
+
+        // Change matrix size (rows or columns)
+        function changeMatrixSize(matrixName, dimension, change) {
+            const matrix = matrixName === 'A' ? matrixA : matrixB;
+            const currentSize = dimension === 'row' ? matrix.rows : matrix.cols;
+            const newSize = currentSize + change;
+            
+            if (newSize < 1) return; // Minimum 1x1 matrix
+            
+            if (dimension === 'row') {
+                matrix.rows = newSize;
+                // Add/remove rows from data
+                if (change > 0) {
+                    matrix.data.push(new Array(matrix.cols).fill(0));
+                } else {
+                    matrix.data.pop();
+                }
+            } else {
+                matrix.cols = newSize;
+                // Add/remove columns from each row
+                for (let i = 0; i < matrix.rows; i++) {
+                    if (change > 0) {
+                        matrix.data[i].push(0);
+                    } else {
+                        matrix.data[i].pop();
+                    }
+                }
+            }
+            
+            renderMatrix(matrixName);
+        }
+
+        // Perform matrix operations
+        function performOperation(operation) {
+            switch (operation) {
+                case 'add':
+                    if (matrixA.rows !== matrixB.rows || matrixA.cols !== matrixB.cols) {
+                        alert('Matrices must have the same dimensions for addition');
+                        return;
+                    }
+                    const sum = addMatrices(matrixA, matrixB);
+                    displayResultMatrix(sum);
+                    break;
+                    
+                case 'subtract':
+                    if (matrixA.rows !== matrixB.rows || matrixA.cols !== matrixB.cols) {
+                        alert('Matrices must have the same dimensions for subtraction');
+                        return;
+                    }
+                    const difference = subtractMatrices(matrixA, matrixB);
+                    displayResultMatrix(difference);
+                    break;
+                    
+                case 'multiply':
+                    if (matrixA.cols !== matrixB.rows) {
+                        alert('Number of columns in Matrix A must match number of rows in Matrix B for multiplication');
+                        return;
+                    }
+                    const product = multiplyMatrices(matrixA, matrixB);
+                    displayResultMatrix(product);
+                    break;
+                    
+                case 'transposeA':
+                    const transposedA = transposeMatrix(matrixA);
+                    displayResultMatrix(transposedA);
+                    break;
+                    
+                case 'transposeB':
+                    const transposedB = transposeMatrix(matrixB);
+                    displayResultMatrix(transposedB);
+                    break;
+                    
+                case 'determinantA':
+                    if (matrixA.rows !== matrixA.cols) {
+                        alert('Matrix must be square to calculate determinant');
+                        return;
+                    }
+                    const det = calculateDeterminant(matrixA.data);
+                    displayScalarResult(det);
+                    break;
+            }
+        }
+
+        // Matrix addition
+        function addMatrices(a, b) {
+            const result = {
+                rows: a.rows,
+                cols: a.cols,
+                data: []
+            };
+            
+            for (let i = 0; i < a.rows; i++) {
+                result.data[i] = [];
+                for (let j = 0; j < a.cols; j++) {
+                    result.data[i][j] = a.data[i][j] + b.data[i][j];
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix subtraction
+        function subtractMatrices(a, b) {
+            const result = {
+                rows: a.rows,
+                cols: a.cols,
+                data: []
+            };
+            
+            for (let i = 0; i < a.rows; i++) {
+                result.data[i] = [];
+                for (let j = 0; j < a.cols; j++) {
+                    result.data[i][j] = a.data[i][j] - b.data[i][j];
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix multiplication
+        function multiplyMatrices(a, b) {
+            const result = {
+                rows: a.rows,
+                cols: b.cols,
+                data: []
+            };
+            
+            for (let i = 0; i < a.rows; i++) {
+                result.data[i] = [];
+                for (let j = 0; j < b.cols; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < a.cols; k++) {
+                        sum += a.data[i][k] * b.data[k][j];
+                    }
+                    result.data[i][j] = sum;
+                }
+            }
+            
+            return result;
+        }
+
+        // Matrix transpose
+        function transposeMatrix(matrix) {
+            const result = {
+                rows: matrix.cols,
+                cols: matrix.rows,
+                data: []
+            };
+            
+            for (let i = 0; i < matrix.cols; i++) {
+                result.data[i] = [];
+                for (let j = 0; j < matrix.rows; j++) {
+                    result.data[i][j] = matrix.data[j][i];
+                }
+            }
+            
+            return result;
+        }
+
+        // Calculate determinant (recursive for nxn matrices)
+        function calculateDeterminant(matrix) {
+            if (matrix.length === 1) {
+                return matrix[0][0];
+            }
+            
+            if (matrix.length === 2) {
+                return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            }
+            
+            let det = 0;
+            for (let i = 0; i < matrix[0].length; i++) {
+                const minor = matrix.slice(1).map(row => row.filter((_, j) => j !== i));
+                det += matrix[0][i] * Math.pow(-1, i) * calculateDeterminant(minor);
+            }
+            
+            return det;
+        }
+
+        // Display result matrix
+        function displayResultMatrix(resultMatrix) {
+            const container = document.getElementById('resultMatrix');
+            const scalarResult = document.getElementById('scalarResult');
+            
+            // Hide scalar result if showing matrix
+            scalarResult.classList.add('hidden');
+            
+            // Clear existing result
+            container.innerHTML = '';
+            
+            // Set grid columns based on result columns
+            container.className = 'grid gap-2 mb-4';
+            container.style.gridTemplateColumns = `repeat(${resultMatrix.cols}, minmax(0, 1fr))`;
+            
+            // Create display elements for each cell
+            for (let i = 0; i < resultMatrix.rows; i++) {
+                for (let j = 0; j < resultMatrix.cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'p-2 border rounded bg-gray-50 text-center';
+                    cell.textContent = resultMatrix.data[i][j];
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        // Display scalar result (for determinant)
+        function displayScalarResult(value) {
+            const container = document.getElementById('resultMatrix');
+            const scalarResult = document.getElementById('scalarResult');
+            
+            // Clear matrix result
+            container.innerHTML = '';
+            
+            // Show scalar result
+            scalarResult.textContent = `Determinant: ${value}`;
+            scalarResult.classList.remove('hidden');
+        }
+
+        // Clear matrices
+        function clearMatrices() {
+            matrixA = {
+                rows: 2,
+                cols: 2,
+                data: [[0, 0], [0, 0]]
+            };
+            
+            matrixB = {
+                rows: 2,
+                cols: 2,
+                data: [[0, 0], [0, 0]]
+            };
+            
+            document.getElementById('resultMatrix').innerHTML = '';
+            document.getElementById('scalarResult').classList.add('hidden');
+            
+            renderMatrix('A');
+            renderMatrix('B');
+        }
+    </script>
+</body>
+</html>
